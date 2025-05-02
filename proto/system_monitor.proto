@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package system_monitor;
+
+option go_package = "github.com/F0Rt04ka/otus_project;sysmon";
+
+service SystemMonitor {
+    rpc GetStats (StatsRequest) returns (stream StatsResponse);
+}
+
+message StatsRequest {
+    int32 N = 1;
+    int32 M = 2;
+}
+
+message StatsResponse {
+    CPUUsageStat cpu_usage = 1;
+    // MemoryUsageStat memory_usage = 2;
+    // DiskUsageStat disk_usage = 3;
+}
+
+message CPUUsageStat {
+    double user_mode = 1;
+	double system_mode = 2;
+	double idle = 3;
+}

@@ -1,0 +1,8 @@
+{
+    "seconds_save_stats": 300,
+    "clear_stats_seconds_interval": 5,
+    "enable_cpu_usage": true,
+    "enable_load_average": true,
+    "enable_disk_load": true,
+    "enable_filesystem_info": true
+}

@@ -11,10 +11,10 @@ type FilesystemInfoResult map[string]*FileSystemUsage
 
 type FileSystemUsage struct {
 	Path            string
-	UsedMB          uint64
-	UsedPcent       float32
-	UsedInodes      uint64
-	UsedInodesPcent float32
+	UsedMB          float64
+	UsedPcent       float64
+	UsedInodes      float64
+	UsedInodesPcent float64
 }
 
 type FilesystemInfoCollector struct{}
@@ -62,10 +62,10 @@ func (c *FilesystemInfoCollector) Collect(result FilesystemInfoResult) error {
 		}
 
 		result[source].Path = source
-		result[source].UsedMB = used
-		result[source].UsedPcent = float32(usedPcent)
-		result[source].UsedInodes = iused
-		result[source].UsedInodesPcent = float32(ipcent)
+		result[source].UsedMB = float64(used)
+		result[source].UsedPcent = usedPcent
+		result[source].UsedInodes = float64(iused)
+		result[source].UsedInodesPcent = ipcent
 	}
 
 	return nil
