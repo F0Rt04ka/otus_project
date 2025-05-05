@@ -1,0 +1,55 @@
+name: Otus project tests
+
+on:
+  push:
+    branches:
+      - *
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ~1.23
+
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Linters
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.62.2
+          working-directory: ${{ env.BRANCH }}
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ^1.23
+
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Unit tests
+        run: go test -v -count=1 -race -timeout=1m ./...
+
+  build::
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ^1.23
+
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Build daemon
+        run: make build-daemon
+
+      - name: Build daemon
+        run: make build-client
