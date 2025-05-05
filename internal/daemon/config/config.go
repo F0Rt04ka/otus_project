@@ -6,10 +6,6 @@ import (
 	"os"
 )
 
-var (
-	cfg Config
-)
-
 type Config struct {
 	DebugMode        bool             // режим отладки
 	GRPCConfig       GrpcConfig       `json:"grpc"`
@@ -17,12 +13,12 @@ type Config struct {
 }
 
 type CollectorsConfig struct {
-	SecondsSaveStats          int  `json:"seconds_save_stats"`
-	ClearStatsSecondsInterval int  `json:"clear_stats_seconds_interval"`
-	EnableCPUUsage            bool `json:"enable_cpu_usage"`
-	EnableLoadAverage         bool `json:"enable_load_average"`
-	EnableDiskLoad            bool `json:"enable_disk_load"`
-	EnableFilesystemInfo      bool `json:"enable_filesystem_info"`
+	SecondsSaveStats          int  `json:"secondsSaveStats"`
+	ClearStatsSecondsInterval int  `json:"clearStatsSecondsInterval"`
+	EnableCPUUsage            bool `json:"enableCpuUsage"`
+	EnableLoadAverage         bool `json:"enableLoadAverage"`
+	EnableDiskLoad            bool `json:"enableDiskLoad"`
+	EnableFilesystemInfo      bool `json:"enableFilesystemInfo"`
 }
 
 type GrpcConfig struct {
@@ -36,13 +32,14 @@ func Load() (*Config, error) {
 	}
 	defer file.Close()
 
+	cfg := Config{}
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&cfg.CollectorsConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode config file: %w", err)
 	}
 
-	cfg.DebugMode = true
+	cfg.DebugMode = false
 
 	return &cfg, nil
 }

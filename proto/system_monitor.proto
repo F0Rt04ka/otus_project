@@ -15,12 +15,24 @@ message StatsRequest {
 
 message StatsResponse {
     CPUUsageStat cpu_usage = 1;
-    // MemoryUsageStat memory_usage = 2;
-    // DiskUsageStat disk_usage = 3;
+    LoadAverageStat load_average = 2;
+    DiskLoadStat disk_load = 3;
 }
 
 message CPUUsageStat {
     double user_mode = 1;
 	double system_mode = 2;
 	double idle = 3;
+}
+
+message LoadAverageStat {
+    double one_min = 1;
+    double five_min = 2;
+    double fifteen_min = 3;
+}
+
+message DiskLoadStat {
+    double tps = 1;
+    double read_kbps = 2;
+    double write_kbps = 3;
 }

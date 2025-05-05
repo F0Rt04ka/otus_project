@@ -24,7 +24,13 @@ func NewFilesystemInfoCollector() *FilesystemInfoCollector {
 }
 
 func (c *FilesystemInfoCollector) Collect(result FilesystemInfoResult) error {
-	dfInodesCmd := exec.Command("df", "--exclude-type=tmpfs", "--exclude-type=efivarfs", "-m", "--output=source,used,pcent,iused,ipcent")
+	dfInodesCmd := exec.Command(
+		"df",
+		"--exclude-type=tmpfs",
+		"--exclude-type=efivarfs",
+		"-m",
+		"--output=source,used,pcent,iused,ipcent",
+	)
 	output, err := dfInodesCmd.Output()
 	if err != nil {
 		return fmt.Errorf("failed to run df: %w", err)

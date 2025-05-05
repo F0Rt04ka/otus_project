@@ -8,8 +8,7 @@ import (
 	"github.com/F0Rt04ka/otus_project/internal/daemon/collectors"
 )
 
-type CollectorResultMap struct {
-	oldestTime           int64
+type ResultMap struct {
 	secondsForSaveStats  int
 	clearOldDataInterval time.Duration
 
@@ -23,11 +22,10 @@ type CollectorResultMap struct {
 	filesystemStatsMux sync.Mutex
 }
 
-func NewCollectorResultMap(secondsForSaveStats int, clearOldDataInterval time.Duration) *CollectorResultMap {
+func NewCollectorResultMap(secondsForSaveStats int, clearOldDataInterval time.Duration) *ResultMap {
 	mapSize := secondsForSaveStats + int(clearOldDataInterval.Seconds()*2)
 
-	return &CollectorResultMap{
-		oldestTime:           time.Now().Unix(),
+	return &ResultMap{
 		secondsForSaveStats:  secondsForSaveStats,
 		clearOldDataInterval: clearOldDataInterval,
 		cpuStats:             make(map[int64]*collectors.CPUUsageResult, mapSize),
@@ -37,35 +35,37 @@ func NewCollectorResultMap(secondsForSaveStats int, clearOldDataInterval time.Du
 	}
 }
 
-func (crm *CollectorResultMap) RunClearDataHandler(startTime time.Time) {
+func (crm *ResultMap) RunClearDataHandler(startUnixTime int64) {
 	go func() {
 		// горутина для очистки старых данных
 		ticker := time.NewTicker(crm.clearOldDataInterval)
 		defer ticker.Stop()
-		oldestTime := startTime.Unix()
+		oldestTime := startUnixTime - int64(crm.secondsForSaveStats)
 
 		for {
 			t := <-ticker.C
 			for i := oldestTime; i < t.Unix()-int64(crm.secondsForSaveStats); i++ {
-				oldestTime = i + 1
 				crm.DeleteStatsForTime(i)
+				oldestTime = i + 1
 			}
 		}
 	}()
 }
 
-func (crm *CollectorResultMap) AddCPUStats(unixTime int64, result *collectors.CPUUsageResult) {
+func (crm *ResultMap) AddCPUStats(unixTime int64, result *collectors.CPUUsageResult) {
 	crm.cpuStatsMux.Lock()
 	defer crm.cpuStatsMux.Unlock()
 	crm.cpuStats[unixTime] = result
 }
-func (crm *CollectorResultMap) GetCPUStats(unixTime int64) (*collectors.CPUUsageResult, bool) {
+
+func (crm *ResultMap) GetCPUStats(unixTime int64) (*collectors.CPUUsageResult, bool) {
 	crm.cpuStatsMux.RLock()
 	defer crm.cpuStatsMux.RUnlock()
 	result, exists := crm.cpuStats[unixTime]
 	return result, exists
 }
-func (crm *CollectorResultMap) GetAvgCpuStats(unixTime int64, secondForAvg int64) *collectors.CPUUsageResult {
+
+func (crm *ResultMap) GetAvgCPUStats(unixTime int64, secondForAvg int64) *collectors.CPUUsageResult {
 	stats := struct {
 		UserMode   []float64
 		SystemMode []float64
@@ -79,6 +79,9 @@ func (crm *CollectorResultMap) GetAvgCpuStats(unixTime int64, secondForAvg int64
 			stats.Idle = append(stats.Idle, res.Idle)
 		}
 	}
+	if len(stats.UserMode) == 0 {
+		return nil
+	}
 
 	return &collectors.CPUUsageResult{
 		UserMode:   avg(stats.UserMode),
@@ -87,18 +90,20 @@ func (crm *CollectorResultMap) GetAvgCpuStats(unixTime int64, secondForAvg int64
 	}
 }
 
-func (crm *CollectorResultMap) AddLoadStats(unixTime int64, result *collectors.LoadAverageResult) {
+func (crm *ResultMap) AddLoadStats(unixTime int64, result *collectors.LoadAverageResult) {
 	crm.loadStatsMux.Lock()
 	defer crm.loadStatsMux.Unlock()
 	crm.loadStats[unixTime] = result
 }
-func (crm *CollectorResultMap) GetLoadStats(unixTime int64) (*collectors.LoadAverageResult, bool) {
+
+func (crm *ResultMap) GetLoadStats(unixTime int64) (*collectors.LoadAverageResult, bool) {
 	crm.loadStatsMux.Lock()
 	defer crm.loadStatsMux.Unlock()
 	result, exists := crm.loadStats[unixTime]
 	return result, exists
 }
-func (crm *CollectorResultMap) GetAvgLoadStats(unixTime int64, secondForAvg int64) *collectors.LoadAverageResult {
+
+func (crm *ResultMap) GetAvgLoadStats(unixTime int64, secondForAvg int64) *collectors.LoadAverageResult {
 	stats := struct {
 		OneMin     []float64
 		FiveMin    []float64
@@ -120,18 +125,20 @@ func (crm *CollectorResultMap) GetAvgLoadStats(unixTime int64, secondForAvg int6
 	}
 }
 
-func (crm *CollectorResultMap) AddDiskLoadStats(unixTime int64, result *collectors.DiskLoadResult) {
+func (crm *ResultMap) AddDiskLoadStats(unixTime int64, result *collectors.DiskLoadResult) {
 	crm.diskLoadStatsMux.Lock()
 	defer crm.diskLoadStatsMux.Unlock()
 	crm.diskLoadStats[unixTime] = result
 }
-func (crm *CollectorResultMap) GetDiskLoadStats(unixTime int64) (*collectors.DiskLoadResult, bool) {
+
+func (crm *ResultMap) GetDiskLoadStats(unixTime int64) (*collectors.DiskLoadResult, bool) {
 	crm.diskLoadStatsMux.Lock()
 	defer crm.diskLoadStatsMux.Unlock()
 	result, exists := crm.diskLoadStats[unixTime]
 	return result, exists
 }
-func (crm *CollectorResultMap) GetAvgDiskLoadStats(unixTime int64, secondForAvg int64) *collectors.DiskLoadResult {
+
+func (crm *ResultMap) GetAvgDiskLoadStats(unixTime int64, secondForAvg int64) *collectors.DiskLoadResult {
 	stats := struct {
 		TPS       []float64
 		ReadKBps  []float64
@@ -153,19 +160,20 @@ func (crm *CollectorResultMap) GetAvgDiskLoadStats(unixTime int64, secondForAvg 
 	}
 }
 
-func (crm *CollectorResultMap) AddFilesystemStats(unixTime int64, result *collectors.FilesystemInfoResult) {
+func (crm *ResultMap) AddFilesystemStats(unixTime int64, result *collectors.FilesystemInfoResult) {
 	crm.filesystemStatsMux.Lock()
 	defer crm.filesystemStatsMux.Unlock()
 	crm.filesystemStats[unixTime] = result
 }
-func (crm *CollectorResultMap) GetFilesystemStats(unixTime int64) (*collectors.FilesystemInfoResult, bool) {
+
+func (crm *ResultMap) GetFilesystemStats(unixTime int64) (*collectors.FilesystemInfoResult, bool) {
 	crm.filesystemStatsMux.Lock()
 	defer crm.filesystemStatsMux.Unlock()
 	result, exists := crm.filesystemStats[unixTime]
 	return result, exists
 }
 
-func (crm *CollectorResultMap) DeleteStatsForTime(unixTime int64) {
+func (crm *ResultMap) DeleteStatsForTime(unixTime int64) {
 	crm.cpuStatsMux.Lock()
 	delete(crm.cpuStats, unixTime)
 	crm.cpuStatsMux.Unlock()

@@ -2,7 +2,6 @@ package collectors
 
 import (
 	"fmt"
-
 	"os"
 	"strconv"
 	"strings"
@@ -28,7 +27,7 @@ func NewDiskLoadCollector() *DiskLoadCollector {
 	return &DiskLoadCollector{}
 }
 
-func (c *DiskLoadCollector) Collect(result *DiskLoadResult) (error) {
+func (c *DiskLoadCollector) Collect(result *DiskLoadResult) error {
 	data, err := os.ReadFile("/proc/diskstats")
 	if err != nil {
 		return fmt.Errorf("failed to read /proc/diskstats: %w", err)

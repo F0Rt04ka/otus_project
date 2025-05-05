@@ -13,8 +13,7 @@ type LoadAverageResult struct {
 	FifteenMin float64
 }
 
-type LoadAverageCollector struct {
-}
+type LoadAverageCollector struct{}
 
 func NewLoadAverageCollector() *LoadAverageCollector {
 	return &LoadAverageCollector{}

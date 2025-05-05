@@ -24,7 +24,7 @@ func NewCPUUsageCollector() *CPUUsageCollector {
 	return &CPUUsageCollector{}
 }
 
-func (c *CPUUsageCollector) Collect(result *CPUUsageResult) (error) {
+func (c *CPUUsageCollector) Collect(result *CPUUsageResult) error {
 	data, err := os.ReadFile("/proc/stat")
 	if err != nil {
 		return fmt.Errorf("failed to read /proc/stat: %w", err)

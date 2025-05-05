@@ -8,8 +8,8 @@ import (
 	"github.com/F0Rt04ka/otus_project/internal/daemon/config"
 )
 
-type CollectorRunner struct {
-	result              *CollectorResultMap
+type Runner struct {
+	result              *ResultMap
 	cpuCollector        *collectors.CPUUsageCollector
 	loadCollector       *collectors.LoadAverageCollector
 	diskLoadCollector   *collectors.DiskLoadCollector
@@ -17,11 +17,10 @@ type CollectorRunner struct {
 }
 
 func NewCollectorRunner(
-	result *CollectorResultMap,
+	result *ResultMap,
 	cfg *config.CollectorsConfig,
-) *CollectorRunner {
-
-	runner := &CollectorRunner{result: result}
+) *Runner {
+	runner := &Runner{result: result}
 
 	if cfg.EnableCPUUsage {
 		runner.cpuCollector = collectors.NewCPUUsageCollector()
@@ -39,9 +38,9 @@ func NewCollectorRunner(
 	return runner
 }
 
-func (c *CollectorRunner) RunAll() error {
+func (c *Runner) RunAll() error {
 	if c.cpuCollector != nil {
-		if err := c.RunCpuCollector(); err != nil {
+		if err := c.RunCPUCollector(); err != nil {
 			return err
 		}
 	}
@@ -59,7 +58,7 @@ func (c *CollectorRunner) RunAll() error {
 	return nil
 }
 
-func (c *CollectorRunner) RunCpuCollector() error {
+func (c *Runner) RunCPUCollector() error {
 	if c.cpuCollector == nil {
 		return fmt.Errorf("cpu collector is not initialized")
 	}
@@ -83,7 +82,7 @@ func (c *CollectorRunner) RunCpuCollector() error {
 	return nil
 }
 
-func (c *CollectorRunner) RunLoadCollector() error {
+func (c *Runner) RunLoadCollector() error {
 	if c.loadCollector == nil {
 		return fmt.Errorf("load collector is not initialized")
 	}
@@ -107,7 +106,7 @@ func (c *CollectorRunner) RunLoadCollector() error {
 	return nil
 }
 
-func (c *CollectorRunner) RunDiskLoadCollector() error {
+func (c *Runner) RunDiskLoadCollector() error {
 	if c.diskLoadCollector == nil {
 		return fmt.Errorf("disk load collector is not initialized")
 	}
@@ -131,7 +130,7 @@ func (c *CollectorRunner) RunDiskLoadCollector() error {
 	return nil
 }
 
-func (c *CollectorRunner) RunFilesystemCollector() error {
+func (c *Runner) RunFilesystemCollector() error {
 	// if c.filesystemCollector == nil {
 	// 	return fmt.Errorf("filesystem collector is not initialized")
 	// }

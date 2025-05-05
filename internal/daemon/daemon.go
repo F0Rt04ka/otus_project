@@ -13,21 +13,24 @@ import (
 )
 
 type Daemon struct {
-	runner  *collector.CollectorRunner
-	results *collector.CollectorResultMap
+	runner  *collector.Runner
+	results *collector.ResultMap
 }
 
-func (d *Daemon) GetResults() *collector.CollectorResultMap {
+func (d *Daemon) GetResults() *collector.ResultMap {
 	return d.results
 }
 
 func RunDaemon(cfg *config.CollectorsConfig) (*Daemon, error) {
-	statsResults := collector.NewCollectorResultMap(cfg.SecondsSaveStats, time.Duration(cfg.ClearStatsSecondsInterval)*time.Second)
-	statsResults.RunClearDataHandler(time.Now())
+	statsResults := collector.NewCollectorResultMap(
+		cfg.SecondsSaveStats,
+		time.Duration(cfg.ClearStatsSecondsInterval)*time.Second,
+	)
+	statsResults.RunClearDataHandler(time.Now().Unix())
 	runner := collector.NewCollectorRunner(statsResults, cfg)
 	err := runner.RunAll()
 	if err != nil {
-		return nil, fmt.Errorf("failed to run collector daemon: %v", err)
+		return nil, fmt.Errorf("failed to run collector daemon: %w", err)
 	}
 
 	return &Daemon{
@@ -39,7 +42,7 @@ func RunDaemon(cfg *config.CollectorsConfig) (*Daemon, error) {
 func RunGRPCServer(cfg *config.GrpcConfig, daemon *Daemon) (*grpc.Server, error) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.Port))
 	if err != nil {
-		return nil, fmt.Errorf("failed to listen: %v", err)
+		return nil, fmt.Errorf("failed to listen: %w", err)
 	}
 
 	grpcServer := grpc.NewServer()
