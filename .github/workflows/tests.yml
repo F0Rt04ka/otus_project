@@ -1,4 +1,4 @@
-name: Otus project tests
+name: Tests and linter
 
 on: [push]
 
