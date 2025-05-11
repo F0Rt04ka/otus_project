@@ -13,8 +13,8 @@ type CollectorI interface {
 func NewDiskLoadCollector() (CollectorI, error) {
 	if ErrNotImplemented != nil {
 		return nil, ErrNotImplemented
-		
 	}
+
 	return &Collector{}, nil
 }
 

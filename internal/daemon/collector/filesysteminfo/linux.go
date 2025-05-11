@@ -17,7 +17,7 @@ type Collector struct{}
 // /dev/nvme0n1p1    185  21%     322    1%
 // /dev/nvme0n1p4 162632  48% 2286533   10%
 // /dev/nvme0n1p5      7   2%       0     -
-// /dev/sda3      646610  73%  100359    1%
+// /dev/sda3      646610  73%  100359    1% .
 func (c *Collector) Collect(result Result) error {
 	dfCmd := exec.Command(
 		"df",
