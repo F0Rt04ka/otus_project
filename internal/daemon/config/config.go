@@ -16,9 +16,13 @@ type CollectorsConfig struct {
 	SecondsSaveStats          int  `json:"secondsSaveStats"`
 	ClearStatsSecondsInterval int  `json:"clearStatsSecondsInterval"`
 	EnableCPUUsage            bool `json:"enableCpuUsage"`
+	CPUUsageIntervalMs        int  `json:"cpuUsageIntervalMs"`
 	EnableLoadAverage         bool `json:"enableLoadAverage"`
+	LoadAverageIntervalMs     int  `json:"loadAverageIntervalMs"`
 	EnableDiskLoad            bool `json:"enableDiskLoad"`
+	DiskLoadIntervalMs        int  `json:"diskLoadIntervalMs"`
 	EnableFilesystemInfo      bool `json:"enableFilesystemInfo"`
+	FilesystemInfoIntervalMs  int  `json:"filesystemInfoIntervalMs"`
 }
 
 type GrpcConfig struct {

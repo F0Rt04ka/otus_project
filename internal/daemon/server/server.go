@@ -66,6 +66,21 @@ func (s *SystemMonitorAPI) GetStats(
 					WriteKbps: diskStat.WriteKBps,
 				}
 			}
+			fsStat := s.StatsResults.GetAvgFilesystemStats(t.Unix(), int64(req.M))
+			if fsStat != nil {
+				resp.DiskStats = make([]*sysmon.DiskStat, len(fsStat))
+				index := 0
+				for _, fs := range fsStat {
+					resp.DiskStats[index] = &sysmon.DiskStat{
+						Name:            fs.Path,
+						UsedMb:          fs.UsedMB,
+						UsedPcent:       fs.UsedPcent,
+						UsedInodes:      fs.UsedInodes,
+						UsedInodesPcent: fs.UsedInodesPcent,
+					}
+					index++
+				}
+			}
 
 			if err := stream.Send(resp); err != nil {
 				return fmt.Errorf("failed to send response: %w", err)

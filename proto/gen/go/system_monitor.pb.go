@@ -78,6 +78,7 @@ type StatsResponse struct {
 	CpuUsage      *CPUUsageStat          `protobuf:"bytes,1,opt,name=cpu_usage,json=cpuUsage,proto3" json:"cpu_usage,omitempty"`
 	LoadAverage   *LoadAverageStat       `protobuf:"bytes,2,opt,name=load_average,json=loadAverage,proto3" json:"load_average,omitempty"`
 	DiskLoad      *DiskLoadStat          `protobuf:"bytes,3,opt,name=disk_load,json=diskLoad,proto3" json:"disk_load,omitempty"`
+	DiskStats     []*DiskStat            `protobuf:"bytes,4,rep,name=disk_stats,json=diskStats,proto3" json:"disk_stats,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -129,6 +130,13 @@ func (x *StatsResponse) GetLoadAverage() *LoadAverageStat {
 func (x *StatsResponse) GetDiskLoad() *DiskLoadStat {
 	if x != nil {
 		return x.DiskLoad
+	}
+	return nil
+}
+
+func (x *StatsResponse) GetDiskStats() []*DiskStat {
+	if x != nil {
+		return x.DiskStats
 	}
 	return nil
 }
@@ -313,6 +321,82 @@ func (x *DiskLoadStat) GetWriteKbps() float64 {
 	return 0
 }
 
+type DiskStat struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Name            string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	UsedMb          float64                `protobuf:"fixed64,2,opt,name=used_mb,json=usedMb,proto3" json:"used_mb,omitempty"`
+	UsedPcent       float64                `protobuf:"fixed64,3,opt,name=used_pcent,json=usedPcent,proto3" json:"used_pcent,omitempty"`
+	UsedInodes      float64                `protobuf:"fixed64,4,opt,name=used_inodes,json=usedInodes,proto3" json:"used_inodes,omitempty"`
+	UsedInodesPcent float64                `protobuf:"fixed64,5,opt,name=used_inodes_pcent,json=usedInodesPcent,proto3" json:"used_inodes_pcent,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *DiskStat) Reset() {
+	*x = DiskStat{}
+	mi := &file_system_monitor_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DiskStat) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DiskStat) ProtoMessage() {}
+
+func (x *DiskStat) ProtoReflect() protoreflect.Message {
+	mi := &file_system_monitor_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DiskStat.ProtoReflect.Descriptor instead.
+func (*DiskStat) Descriptor() ([]byte, []int) {
+	return file_system_monitor_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *DiskStat) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *DiskStat) GetUsedMb() float64 {
+	if x != nil {
+		return x.UsedMb
+	}
+	return 0
+}
+
+func (x *DiskStat) GetUsedPcent() float64 {
+	if x != nil {
+		return x.UsedPcent
+	}
+	return 0
+}
+
+func (x *DiskStat) GetUsedInodes() float64 {
+	if x != nil {
+		return x.UsedInodes
+	}
+	return 0
+}
+
+func (x *DiskStat) GetUsedInodesPcent() float64 {
+	if x != nil {
+		return x.UsedInodesPcent
+	}
+	return 0
+}
+
 var File_system_monitor_proto protoreflect.FileDescriptor
 
 const file_system_monitor_proto_rawDesc = "" +
@@ -320,11 +404,13 @@ const file_system_monitor_proto_rawDesc = "" +
 	"\x14system_monitor.proto\x12\x0esystem_monitor\"*\n" +
 	"\fStatsRequest\x12\f\n" +
 	"\x01N\x18\x01 \x01(\x05R\x01N\x12\f\n" +
-	"\x01M\x18\x02 \x01(\x05R\x01M\"\xc9\x01\n" +
+	"\x01M\x18\x02 \x01(\x05R\x01M\"\x82\x02\n" +
 	"\rStatsResponse\x129\n" +
 	"\tcpu_usage\x18\x01 \x01(\v2\x1c.system_monitor.CPUUsageStatR\bcpuUsage\x12B\n" +
 	"\fload_average\x18\x02 \x01(\v2\x1f.system_monitor.LoadAverageStatR\vloadAverage\x129\n" +
-	"\tdisk_load\x18\x03 \x01(\v2\x1c.system_monitor.DiskLoadStatR\bdiskLoad\"`\n" +
+	"\tdisk_load\x18\x03 \x01(\v2\x1c.system_monitor.DiskLoadStatR\bdiskLoad\x127\n" +
+	"\n" +
+	"disk_stats\x18\x04 \x03(\v2\x18.system_monitor.DiskStatR\tdiskStats\"`\n" +
 	"\fCPUUsageStat\x12\x1b\n" +
 	"\tuser_mode\x18\x01 \x01(\x01R\buserMode\x12\x1f\n" +
 	"\vsystem_mode\x18\x02 \x01(\x01R\n" +
@@ -339,7 +425,15 @@ const file_system_monitor_proto_rawDesc = "" +
 	"\x03tps\x18\x01 \x01(\x01R\x03tps\x12\x1b\n" +
 	"\tread_kbps\x18\x02 \x01(\x01R\breadKbps\x12\x1d\n" +
 	"\n" +
-	"write_kbps\x18\x03 \x01(\x01R\twriteKbps2Z\n" +
+	"write_kbps\x18\x03 \x01(\x01R\twriteKbps\"\xa3\x01\n" +
+	"\bDiskStat\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x17\n" +
+	"\aused_mb\x18\x02 \x01(\x01R\x06usedMb\x12\x1d\n" +
+	"\n" +
+	"used_pcent\x18\x03 \x01(\x01R\tusedPcent\x12\x1f\n" +
+	"\vused_inodes\x18\x04 \x01(\x01R\n" +
+	"usedInodes\x12*\n" +
+	"\x11used_inodes_pcent\x18\x05 \x01(\x01R\x0fusedInodesPcent2Z\n" +
 	"\rSystemMonitor\x12I\n" +
 	"\bGetStats\x12\x1c.system_monitor.StatsRequest\x1a\x1d.system_monitor.StatsResponse0\x01B)Z'github.com/F0Rt04ka/otus_project;sysmonb\x06proto3"
 
@@ -355,25 +449,27 @@ func file_system_monitor_proto_rawDescGZIP() []byte {
 	return file_system_monitor_proto_rawDescData
 }
 
-var file_system_monitor_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_system_monitor_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_system_monitor_proto_goTypes = []any{
 	(*StatsRequest)(nil),    // 0: system_monitor.StatsRequest
 	(*StatsResponse)(nil),   // 1: system_monitor.StatsResponse
 	(*CPUUsageStat)(nil),    // 2: system_monitor.CPUUsageStat
 	(*LoadAverageStat)(nil), // 3: system_monitor.LoadAverageStat
 	(*DiskLoadStat)(nil),    // 4: system_monitor.DiskLoadStat
+	(*DiskStat)(nil),        // 5: system_monitor.DiskStat
 }
 var file_system_monitor_proto_depIdxs = []int32{
 	2, // 0: system_monitor.StatsResponse.cpu_usage:type_name -> system_monitor.CPUUsageStat
 	3, // 1: system_monitor.StatsResponse.load_average:type_name -> system_monitor.LoadAverageStat
 	4, // 2: system_monitor.StatsResponse.disk_load:type_name -> system_monitor.DiskLoadStat
-	0, // 3: system_monitor.SystemMonitor.GetStats:input_type -> system_monitor.StatsRequest
-	1, // 4: system_monitor.SystemMonitor.GetStats:output_type -> system_monitor.StatsResponse
-	4, // [4:5] is the sub-list for method output_type
-	3, // [3:4] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	5, // 3: system_monitor.StatsResponse.disk_stats:type_name -> system_monitor.DiskStat
+	0, // 4: system_monitor.SystemMonitor.GetStats:input_type -> system_monitor.StatsRequest
+	1, // 5: system_monitor.SystemMonitor.GetStats:output_type -> system_monitor.StatsResponse
+	5, // [5:6] is the sub-list for method output_type
+	4, // [4:5] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_system_monitor_proto_init() }
@@ -387,7 +483,7 @@ func file_system_monitor_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_system_monitor_proto_rawDesc), len(file_system_monitor_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

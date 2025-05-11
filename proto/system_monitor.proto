@@ -17,6 +17,7 @@ message StatsResponse {
     CPUUsageStat cpu_usage = 1;
     LoadAverageStat load_average = 2;
     DiskLoadStat disk_load = 3;
+    repeated DiskStat disk_stats = 4;
 }
 
 message CPUUsageStat {
@@ -35,4 +36,12 @@ message DiskLoadStat {
     double tps = 1;
     double read_kbps = 2;
     double write_kbps = 3;
+}
+
+message DiskStat {
+    string name = 1;
+    double used_mb = 2;
+    double used_pcent = 3;
+    double used_inodes = 4;
+    double used_inodes_pcent = 5;
 }

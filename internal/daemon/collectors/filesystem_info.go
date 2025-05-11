@@ -24,6 +24,7 @@ func NewFilesystemInfoCollector() *FilesystemInfoCollector {
 }
 
 func (c *FilesystemInfoCollector) Collect(result FilesystemInfoResult) error {
+	
 	dfInodesCmd := exec.Command(
 		"df",
 		"--exclude-type=tmpfs",

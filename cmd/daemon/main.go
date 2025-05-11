@@ -47,16 +47,24 @@ func printResultsDebug(results *collector.ResultMap) {
 		cpuStats := results.GetAvgCPUStats(unixTime, secondForAvg)
 		loadStats := results.GetAvgLoadStats(unixTime, secondForAvg)
 		diskStats := results.GetAvgDiskLoadStats(unixTime, secondForAvg)
+		fsStats := results.GetAvgFilesystemStats(unixTime, secondForAvg)
 
 		fmt.Println("")
 		fmt.Printf("CPU Usage: %.2f%% %.2f%% %.2f%% \n", cpuStats.UserMode, cpuStats.SystemMode, cpuStats.Idle)
 		fmt.Printf("Load Average: %.2f %.2f %.2f \n", loadStats.OneMin, loadStats.FiveMin, loadStats.FifteenMin)
 		fmt.Printf("Disk Load: %.2f TPS %.2f KB/s %.2f KB/s \n", diskStats.TPS, diskStats.ReadKBps, diskStats.WriteKBps)
-		// fmt.Println("Filesystem Usage:")
-		// for _, fsInfo := range currentResult.FilesystemStats {
-		// 	fmt.Printf("  %s: Used: %d MB (%.2f%%), Used Inodes: %d (%.2f%%)\n",
-		// 		fsInfo.Path, fsInfo.UsedMB, fsInfo.UsedPcent, fsInfo.UsedInodes, fsInfo.UsedInodesPcent)
-		// }
+		fmt.Println("Filesystem Usage:")
+		for _, fsStat := range fsStats {
+			fmt.Printf(
+				"  %s: %.2f used MB, %.2f%%; %.2f used inodes, %.2f%%\n",
+				fsStat.Path,
+				fsStat.UsedMB,
+				fsStat.UsedPcent,
+				fsStat.UsedInodes,
+				fsStat.UsedInodesPcent,
+			)
+		}
+
 		fmt.Println("-----------------------------------------------------")
 	}
 

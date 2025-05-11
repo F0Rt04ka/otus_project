@@ -172,6 +172,50 @@ func (crm *ResultMap) GetFilesystemStats(unixTime int64) (*collectors.Filesystem
 	result, exists := crm.filesystemStats[unixTime]
 	return result, exists
 }
+func (crm *ResultMap) GetAvgFilesystemStats(unixTime int64, secondForAvg int64) collectors.FilesystemInfoResult {
+	stats := make(map[string]*struct {
+		UsedMB          []float64
+		UsedPcent       []float64
+		UsedInodes      []float64
+		UsedInodesPcent []float64
+	})
+	for i := unixTime; i > unixTime-secondForAvg; i-- {
+		if res, _ := crm.GetFilesystemStats(i); res != nil {
+			for _, fsInfo := range *res {
+				if _, exists := stats[fsInfo.Path]; !exists {
+					stats[fsInfo.Path] = &struct {
+						UsedMB          []float64
+						UsedPcent       []float64
+						UsedInodes      []float64
+						UsedInodesPcent []float64
+					}{}
+				}
+
+				stats[fsInfo.Path].UsedMB = append(stats[fsInfo.Path].UsedMB, fsInfo.UsedMB)
+				stats[fsInfo.Path].UsedPcent = append(stats[fsInfo.Path].UsedPcent, fsInfo.UsedPcent)
+				stats[fsInfo.Path].UsedInodes = append(stats[fsInfo.Path].UsedInodes, fsInfo.UsedInodes)
+				stats[fsInfo.Path].UsedInodesPcent = append(stats[fsInfo.Path].UsedInodesPcent, fsInfo.UsedInodesPcent)
+			}
+		}
+	}
+	if len(stats) == 0 {
+		return nil
+	}
+
+	avgStats := make(collectors.FilesystemInfoResult, len(stats))
+
+	for path, fsStat := range stats {
+		avgStats[path] = &collectors.FileSystemUsage{
+			Path:            path,
+			UsedMB:          avg(fsStat.UsedMB),
+			UsedPcent:       avg(fsStat.UsedPcent),
+			UsedInodes:      avg(fsStat.UsedInodes),
+			UsedInodesPcent: avg(fsStat.UsedInodesPcent),
+		}
+	}
+
+	return avgStats
+}
 
 func (crm *ResultMap) DeleteStatsForTime(unixTime int64) {
 	crm.cpuStatsMux.Lock()

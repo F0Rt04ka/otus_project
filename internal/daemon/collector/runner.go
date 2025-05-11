@@ -9,11 +9,17 @@ import (
 )
 
 type Runner struct {
-	result              *ResultMap
-	cpuCollector        *collectors.CPUUsageCollector
-	loadCollector       *collectors.LoadAverageCollector
-	diskLoadCollector   *collectors.DiskLoadCollector
-	filesystemCollector *collectors.FilesystemInfoCollector
+	errorChan                   chan error
+	errorHandler                func(error)
+	result                      *ResultMap
+	cpuCollector                *collectors.CPUUsageCollector
+	cpuCollectorInterval        time.Duration
+	loadCollector               *collectors.LoadAverageCollector
+	loadCollectorInterval       time.Duration
+	diskLoadCollector           *collectors.DiskLoadCollector
+	diskLoadCollectorInterval   time.Duration
+	filesystemCollector         *collectors.FilesystemInfoCollector
+	filesystemCollectorInterval time.Duration
 }
 
 func NewCollectorRunner(
@@ -35,122 +41,140 @@ func NewCollectorRunner(
 		runner.filesystemCollector = collectors.NewFilesystemInfoCollector()
 	}
 
+	runner.cpuCollectorInterval = time.Duration(cfg.CPUUsageIntervalMs) * time.Millisecond
+	runner.loadCollectorInterval = time.Duration(cfg.LoadAverageIntervalMs) * time.Millisecond
+	runner.diskLoadCollectorInterval = time.Duration(cfg.DiskLoadIntervalMs) * time.Millisecond
+	runner.filesystemCollectorInterval = time.Duration(cfg.FilesystemInfoIntervalMs) * time.Millisecond
+	runner.errorChan = make(chan error)
+
 	return runner
 }
 
-func (c *Runner) RunAll() error {
-	if c.cpuCollector != nil {
-		if err := c.RunCPUCollector(); err != nil {
-			return err
-		}
-	}
-	if c.loadCollector != nil {
-		if err := c.RunLoadCollector(); err != nil {
-			return err
-		}
-	}
-	if c.diskLoadCollector != nil {
-		if err := c.RunDiskLoadCollector(); err != nil {
-			return err
-		}
-	}
-
-	return nil
+func (r *Runner) SetErrorHandler(handler func(error)) {
+	r.errorHandler = handler
 }
 
-func (c *Runner) RunCPUCollector() error {
-	if c.cpuCollector == nil {
-		return fmt.Errorf("cpu collector is not initialized")
+func (r *Runner) RunErrorHandler() {
+	go func() {
+		for err := range r.errorChan {
+			if r.errorHandler != nil {
+				r.errorHandler(err)
+			} else {
+				panic(err)
+			}
+		}
+	}()
+}
+
+func (r *Runner) RunAll() {
+	r.RunErrorHandler()
+
+	if r.cpuCollector != nil {
+		r.RunCPUCollector()
+	}
+	if r.loadCollector != nil {
+		r.RunLoadCollector()
+	}
+	if r.diskLoadCollector != nil {
+		r.RunDiskLoadCollector()
+	}
+	if r.filesystemCollector != nil {
+		r.RunFilesystemCollector()
+	}
+}
+
+func (r *Runner) RunCPUCollector() {
+	if r.cpuCollector == nil {
+		r.errorChan <- fmt.Errorf("cpu collector is not initialized")
+		return
 	}
 
 	go func() {
-		ticker := time.NewTicker(700 * time.Millisecond)
+		ticker := time.NewTicker(r.cpuCollectorInterval)
 		defer ticker.Stop()
 
 		for {
 			collectTime := <-ticker.C
 			result := &collectors.CPUUsageResult{}
-			err := c.cpuCollector.Collect(result)
+			err := r.cpuCollector.Collect(result)
 			if err != nil {
-				panic(err)
+				r.errorChan <- err
+				continue
 			}
 
-			c.result.AddCPUStats(collectTime.Unix(), result)
+			r.result.AddCPUStats(collectTime.Unix(), result)
 		}
 	}()
-
-	return nil
 }
 
-func (c *Runner) RunLoadCollector() error {
-	if c.loadCollector == nil {
-		return fmt.Errorf("load collector is not initialized")
+func (r *Runner) RunLoadCollector() {
+	if r.loadCollector == nil {
+		r.errorChan <- fmt.Errorf("load collector is not initialized")
+		return
 	}
 
 	go func() {
-		ticker := time.NewTicker(700 * time.Millisecond)
+		ticker := time.NewTicker(r.loadCollectorInterval)
 		defer ticker.Stop()
 
 		for {
 			collectTime := <-ticker.C
 			result := &collectors.LoadAverageResult{}
-			err := c.loadCollector.Collect(result)
+			err := r.loadCollector.Collect(result)
 			if err != nil {
-				panic(err)
+				r.errorChan <- err
+				continue
 			}
 
-			c.result.AddLoadStats(collectTime.Unix(), result)
+			r.result.AddLoadStats(collectTime.Unix(), result)
 		}
 	}()
-
-	return nil
 }
 
-func (c *Runner) RunDiskLoadCollector() error {
-	if c.diskLoadCollector == nil {
-		return fmt.Errorf("disk load collector is not initialized")
+func (r *Runner) RunDiskLoadCollector() {
+	if r.diskLoadCollector == nil {
+		r.errorChan <- fmt.Errorf("disk load collector is not initialized")
+		return
 	}
 
 	go func() {
-		ticker := time.NewTicker(1500 * time.Millisecond)
+		ticker := time.NewTicker(r.diskLoadCollectorInterval)
 		defer ticker.Stop()
 
 		for {
 			collectTime := <-ticker.C
 			result := &collectors.DiskLoadResult{}
-			err := c.diskLoadCollector.Collect(result)
+			err := r.diskLoadCollector.Collect(result)
 			if err != nil {
-				panic(err)
+				r.errorChan <- err
+				continue
 			}
 
-			c.result.AddDiskLoadStats(collectTime.Unix(), result)
+			r.result.AddDiskLoadStats(collectTime.Unix(), result)
 		}
 	}()
-
-	return nil
 }
 
-func (c *Runner) RunFilesystemCollector() error {
-	// if c.filesystemCollector == nil {
-	// 	return fmt.Errorf("filesystem collector is not initialized")
-	// }
+func (r *Runner) RunFilesystemCollector() {
+	if r.filesystemCollector == nil {
+		r.errorChan <- fmt.Errorf("filesystem collector is not initialized")
+		return
+	}
 
-	// go func() {
-	// 	ticker := time.NewTicker(2000 * time.Millisecond)
-	// 	defer ticker.Stop()
+	go func() {
+		ticker := time.NewTicker(r.filesystemCollectorInterval)
+		defer ticker.Stop()
 
-	// 	for {
-	// 		collectTime := <-ticker.C
-	// 		result := &collectors.FilesystemInfoResult{}
-	// 		err := c.filesystemCollector.Collect(result)
-	// 		if err != nil {
-	// 			panic(err)
-	// 		}
+		for {
+			collectTime := <-ticker.C
+			result := collectors.FilesystemInfoResult{}
+			err := r.filesystemCollector.Collect(result)
+			if err != nil {
+				r.errorChan <- err
+				continue
+			}
 
-	// 		c.result.AddFilesystemStats(collectTime.Unix(), result)
-	// 	}
-	// }()
-	// TODO
-
-	return nil
+			r.result.AddFilesystemStats(collectTime.Unix(), &result)
+		}
+	}()
 }

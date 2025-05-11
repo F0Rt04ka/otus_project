@@ -27,11 +27,12 @@ func RunDaemon(cfg *config.CollectorsConfig) (*Daemon, error) {
 		time.Duration(cfg.ClearStatsSecondsInterval)*time.Second,
 	)
 	statsResults.RunClearDataHandler(time.Now().Unix())
+
 	runner := collector.NewCollectorRunner(statsResults, cfg)
-	err := runner.RunAll()
-	if err != nil {
-		return nil, fmt.Errorf("failed to run collector daemon: %w", err)
-	}
+	runner.SetErrorHandler(func(err error) {
+		log.Printf("Error in runner: %s\n", err.Error())
+	})
+	runner.RunAll()
 
 	return &Daemon{
 		runner:  runner,
