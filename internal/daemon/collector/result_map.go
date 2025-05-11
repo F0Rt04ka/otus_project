@@ -172,6 +172,7 @@ func (crm *ResultMap) GetFilesystemStats(unixTime int64) (*collectors.Filesystem
 	result, exists := crm.filesystemStats[unixTime]
 	return result, exists
 }
+
 func (crm *ResultMap) GetAvgFilesystemStats(unixTime int64, secondForAvg int64) collectors.FilesystemInfoResult {
 	stats := make(map[string]*struct {
 		UsedMB          []float64
