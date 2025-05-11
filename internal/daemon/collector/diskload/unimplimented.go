@@ -10,5 +10,9 @@ import (
 type Collector struct{}
 
 func (*Collector) Collect(result *Result) error {
-	return fmt.Errorf("CPU usage not implemented for %s", runtime.GOOS)
+	return ErrNotImplemented
+}
+
+func init() {
+	ErrNotImplemented = fmt.Errorf("Disk load not implemented for %s", runtime.GOOS)
 }

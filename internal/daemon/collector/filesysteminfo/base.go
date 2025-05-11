@@ -14,6 +14,12 @@ type CollectorI interface {
 	Collect(result Result) error
 }
 
-func NewFilesystemInfoCollector() CollectorI {
-	return &Collector{}
+func NewFilesystemInfoCollector() (CollectorI, error) {
+	if ErrNotImplemented != nil {
+		return nil, ErrNotImplemented
+	}
+
+	return &Collector{}, nil
 }
+
+var ErrNotImplemented error

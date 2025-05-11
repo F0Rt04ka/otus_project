@@ -10,6 +10,12 @@ type CollectorI interface {
 	Collect(result *Result) error
 }
 
-func NewLoadAverageCollector() CollectorI {
-	return &Collector{}
+func NewLoadAverageCollector() (CollectorI, error) {
+	if ErrNotImplemented != nil {
+		return nil, ErrNotImplemented
+	}
+
+	return &Collector{}, nil
 }
+
+var ErrNotImplemented error

@@ -10,6 +10,12 @@ type CollectorI interface {
 	Collect(result *Result) error
 }
 
-func NewDiskLoadCollector() CollectorI {
-	return &Collector{}
+func NewDiskLoadCollector() (CollectorI, error) {
+	if ErrNotImplemented != nil {
+		return nil, ErrNotImplemented
+		
+	}
+	return &Collector{}, nil
 }
+
+var ErrNotImplemented error

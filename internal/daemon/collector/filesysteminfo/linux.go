@@ -11,16 +11,22 @@ import (
 
 type Collector struct{}
 
+// ❯ df -m --exclude-type=tmpfs --exclude-type=efivarfs --output=source,used,pcent,iused,ipcent
+// Filesystem       Used Use%   IUsed IUse%
+// /dev/nvme0n1p2  26205  29%  453062    8%
+// /dev/nvme0n1p1    185  21%     322    1%
+// /dev/nvme0n1p4 162632  48% 2286533   10%
+// /dev/nvme0n1p5      7   2%       0     -
+// /dev/sda3      646610  73%  100359    1%
 func (c *Collector) Collect(result Result) error {
-	// df -m --exclude-type=tmpfs --exclude-type=efivarfs --output=source,used,pcent,iused,ipcent
-	dfInodesCmd := exec.Command(
+	dfCmd := exec.Command(
 		"df",
 		"--exclude-type=tmpfs",
 		"--exclude-type=efivarfs",
 		"-m",
 		"--output=source,used,pcent,iused,ipcent",
 	)
-	output, err := dfInodesCmd.Output()
+	output, err := dfCmd.Output()
 	if err != nil {
 		return fmt.Errorf("failed to run df: %w", err)
 	}

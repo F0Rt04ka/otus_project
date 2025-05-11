@@ -2,6 +2,7 @@ package collector
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/F0Rt04ka/otus_project/internal/daemon/collector/cpuusage"
@@ -30,18 +31,30 @@ func NewCollectorRunner(
 	cfg *config.CollectorsConfig,
 ) *Runner {
 	runner := &Runner{result: result}
-
+	var err error
 	if cfg.EnableCPUUsage {
-		runner.cpuCollector = cpuusage.NewCPUUsageCollector()
+		runner.cpuCollector, err = cpuusage.NewCPUUsageCollector()
+		if err != nil {
+			log.Println("Error initializing CPU usage collector:", err)
+		}
 	}
 	if cfg.EnableLoadAverage {
-		runner.loadCollector = loadaverage.NewLoadAverageCollector()
+		runner.loadCollector, err = loadaverage.NewLoadAverageCollector()
+		if err != nil {
+			log.Println("Error initializing Load average collector:", err)
+		}
 	}
 	if cfg.EnableDiskLoad {
-		runner.diskLoadCollector = diskload.NewDiskLoadCollector()
+		runner.diskLoadCollector, err = diskload.NewDiskLoadCollector()
+		if err != nil {
+			log.Println("Error initializing Disk load collector:", err)
+		}
 	}
 	if cfg.EnableFilesystemInfo {
-		runner.filesystemCollector = filesysteminfo.NewFilesystemInfoCollector()
+		runner.filesystemCollector, err = filesysteminfo.NewFilesystemInfoCollector()
+		if err != nil {
+			log.Println("Error initializing Filesystem usage collector:", err)
+		}
 	}
 
 	runner.cpuCollectorInterval = time.Duration(cfg.CPUUsageIntervalMs) * time.Millisecond
