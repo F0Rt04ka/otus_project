@@ -5,20 +5,23 @@ import (
 	"sync"
 	"time"
 
-	"github.com/F0Rt04ka/otus_project/internal/daemon/collectors"
+	"github.com/F0Rt04ka/otus_project/internal/daemon/collector/cpuusage"
+	"github.com/F0Rt04ka/otus_project/internal/daemon/collector/diskload"
+	"github.com/F0Rt04ka/otus_project/internal/daemon/collector/filesysteminfo"
+	"github.com/F0Rt04ka/otus_project/internal/daemon/collector/loadaverage"
 )
 
 type ResultMap struct {
 	secondsForSaveStats  int
 	clearOldDataInterval time.Duration
 
-	cpuStats           map[int64]*collectors.CPUUsageResult
+	cpuStats           map[int64]*cpuusage.Result
 	cpuStatsMux        sync.RWMutex
-	loadStats          map[int64]*collectors.LoadAverageResult
+	loadStats          map[int64]*loadaverage.Result
 	loadStatsMux       sync.RWMutex
-	diskLoadStats      map[int64]*collectors.DiskLoadResult
+	diskLoadStats      map[int64]*diskload.Result
 	diskLoadStatsMux   sync.RWMutex
-	filesystemStats    map[int64]*collectors.FilesystemInfoResult
+	filesystemStats    map[int64]*filesysteminfo.Result
 	filesystemStatsMux sync.Mutex
 }
 
@@ -28,10 +31,10 @@ func NewCollectorResultMap(secondsForSaveStats int, clearOldDataInterval time.Du
 	return &ResultMap{
 		secondsForSaveStats:  secondsForSaveStats,
 		clearOldDataInterval: clearOldDataInterval,
-		cpuStats:             make(map[int64]*collectors.CPUUsageResult, mapSize),
-		loadStats:            make(map[int64]*collectors.LoadAverageResult, mapSize),
-		diskLoadStats:        make(map[int64]*collectors.DiskLoadResult, mapSize),
-		filesystemStats:      make(map[int64]*collectors.FilesystemInfoResult, mapSize),
+		cpuStats:             make(map[int64]*cpuusage.Result, mapSize),
+		loadStats:            make(map[int64]*loadaverage.Result, mapSize),
+		diskLoadStats:        make(map[int64]*diskload.Result, mapSize),
+		filesystemStats:      make(map[int64]*filesysteminfo.Result, mapSize),
 	}
 }
 
@@ -52,20 +55,20 @@ func (crm *ResultMap) RunClearDataHandler(startUnixTime int64) {
 	}()
 }
 
-func (crm *ResultMap) AddCPUStats(unixTime int64, result *collectors.CPUUsageResult) {
+func (crm *ResultMap) AddCPUStats(unixTime int64, result *cpuusage.Result) {
 	crm.cpuStatsMux.Lock()
 	defer crm.cpuStatsMux.Unlock()
 	crm.cpuStats[unixTime] = result
 }
 
-func (crm *ResultMap) GetCPUStats(unixTime int64) (*collectors.CPUUsageResult, bool) {
+func (crm *ResultMap) GetCPUStats(unixTime int64) (*cpuusage.Result, bool) {
 	crm.cpuStatsMux.RLock()
 	defer crm.cpuStatsMux.RUnlock()
 	result, exists := crm.cpuStats[unixTime]
 	return result, exists
 }
 
-func (crm *ResultMap) GetAvgCPUStats(unixTime int64, secondForAvg int64) *collectors.CPUUsageResult {
+func (crm *ResultMap) GetAvgCPUStats(unixTime int64, secondForAvg int64) *cpuusage.Result {
 	stats := struct {
 		UserMode   []float64
 		SystemMode []float64
@@ -83,27 +86,27 @@ func (crm *ResultMap) GetAvgCPUStats(unixTime int64, secondForAvg int64) *collec
 		return nil
 	}
 
-	return &collectors.CPUUsageResult{
+	return &cpuusage.Result{
 		UserMode:   avg(stats.UserMode),
 		SystemMode: avg(stats.SystemMode),
 		Idle:       avg(stats.Idle),
 	}
 }
 
-func (crm *ResultMap) AddLoadStats(unixTime int64, result *collectors.LoadAverageResult) {
+func (crm *ResultMap) AddLoadStats(unixTime int64, result *loadaverage.Result) {
 	crm.loadStatsMux.Lock()
 	defer crm.loadStatsMux.Unlock()
 	crm.loadStats[unixTime] = result
 }
 
-func (crm *ResultMap) GetLoadStats(unixTime int64) (*collectors.LoadAverageResult, bool) {
+func (crm *ResultMap) GetLoadStats(unixTime int64) (*loadaverage.Result, bool) {
 	crm.loadStatsMux.Lock()
 	defer crm.loadStatsMux.Unlock()
 	result, exists := crm.loadStats[unixTime]
 	return result, exists
 }
 
-func (crm *ResultMap) GetAvgLoadStats(unixTime int64, secondForAvg int64) *collectors.LoadAverageResult {
+func (crm *ResultMap) GetAvgLoadStats(unixTime int64, secondForAvg int64) *loadaverage.Result {
 	stats := struct {
 		OneMin     []float64
 		FiveMin    []float64
@@ -118,27 +121,27 @@ func (crm *ResultMap) GetAvgLoadStats(unixTime int64, secondForAvg int64) *colle
 		}
 	}
 
-	return &collectors.LoadAverageResult{
+	return &loadaverage.Result{
 		OneMin:     avg(stats.OneMin),
 		FiveMin:    avg(stats.FiveMin),
 		FifteenMin: avg(stats.FifteenMin),
 	}
 }
 
-func (crm *ResultMap) AddDiskLoadStats(unixTime int64, result *collectors.DiskLoadResult) {
+func (crm *ResultMap) AddDiskLoadStats(unixTime int64, result *diskload.Result) {
 	crm.diskLoadStatsMux.Lock()
 	defer crm.diskLoadStatsMux.Unlock()
 	crm.diskLoadStats[unixTime] = result
 }
 
-func (crm *ResultMap) GetDiskLoadStats(unixTime int64) (*collectors.DiskLoadResult, bool) {
+func (crm *ResultMap) GetDiskLoadStats(unixTime int64) (*diskload.Result, bool) {
 	crm.diskLoadStatsMux.Lock()
 	defer crm.diskLoadStatsMux.Unlock()
 	result, exists := crm.diskLoadStats[unixTime]
 	return result, exists
 }
 
-func (crm *ResultMap) GetAvgDiskLoadStats(unixTime int64, secondForAvg int64) *collectors.DiskLoadResult {
+func (crm *ResultMap) GetAvgDiskLoadStats(unixTime int64, secondForAvg int64) *diskload.Result {
 	stats := struct {
 		TPS       []float64
 		ReadKBps  []float64
@@ -153,27 +156,27 @@ func (crm *ResultMap) GetAvgDiskLoadStats(unixTime int64, secondForAvg int64) *c
 		}
 	}
 
-	return &collectors.DiskLoadResult{
+	return &diskload.Result{
 		TPS:       avg(stats.TPS),
 		ReadKBps:  avg(stats.ReadKBps),
 		WriteKBps: avg(stats.WriteKBps),
 	}
 }
 
-func (crm *ResultMap) AddFilesystemStats(unixTime int64, result *collectors.FilesystemInfoResult) {
+func (crm *ResultMap) AddFilesystemStats(unixTime int64, result *filesysteminfo.Result) {
 	crm.filesystemStatsMux.Lock()
 	defer crm.filesystemStatsMux.Unlock()
 	crm.filesystemStats[unixTime] = result
 }
 
-func (crm *ResultMap) GetFilesystemStats(unixTime int64) (*collectors.FilesystemInfoResult, bool) {
+func (crm *ResultMap) GetFilesystemStats(unixTime int64) (*filesysteminfo.Result, bool) {
 	crm.filesystemStatsMux.Lock()
 	defer crm.filesystemStatsMux.Unlock()
 	result, exists := crm.filesystemStats[unixTime]
 	return result, exists
 }
 
-func (crm *ResultMap) GetAvgFilesystemStats(unixTime int64, secondForAvg int64) collectors.FilesystemInfoResult {
+func (crm *ResultMap) GetAvgFilesystemStats(unixTime int64, secondForAvg int64) filesysteminfo.Result {
 	stats := make(map[string]*struct {
 		UsedMB          []float64
 		UsedPcent       []float64
@@ -203,10 +206,10 @@ func (crm *ResultMap) GetAvgFilesystemStats(unixTime int64, secondForAvg int64) 
 		return nil
 	}
 
-	avgStats := make(collectors.FilesystemInfoResult, len(stats))
+	avgStats := make(filesysteminfo.Result, len(stats))
 
 	for path, fsStat := range stats {
-		avgStats[path] = &collectors.FileSystemUsage{
+		avgStats[path] = &filesysteminfo.FileSystemUsage{
 			Path:            path,
 			UsedMB:          avg(fsStat.UsedMB),
 			UsedPcent:       avg(fsStat.UsedPcent),

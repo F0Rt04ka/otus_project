@@ -59,11 +59,23 @@ func printResults(results *sysmon.StatsResponse) {
 	cpuStats := results.GetCpuUsage()
 	loadAvg := results.GetLoadAverage()
 	diskLoad := results.GetDiskLoad()
+	fsStats := results.GetDiskStats()
 
 	fmt.Println("")
 	fmt.Printf("CPU Usage: %.2f%% %.2f%% %.2f%% \n", cpuStats.UserMode, cpuStats.SystemMode, cpuStats.Idle)
 	fmt.Printf("Load Average: %.2f %.2f %.2f \n", loadAvg.OneMin, loadAvg.FiveMin, loadAvg.FifteenMin)
 	fmt.Printf("Disk Load: %.2f TPS %.2f KB/s %.2f KB/s \n", diskLoad.Tps, diskLoad.ReadKbps, diskLoad.WriteKbps)
+	fmt.Println("Filesystem Usage:")
+	for _, fsStat := range fsStats {
+		fmt.Printf(
+			"  %s: %.2f used MB, %.2f%%; %.2f used inodes, %.2f%%\n",
+			fsStat.Path,
+			fsStat.UsedMb,
+			fsStat.UsedPcent,
+			fsStat.UsedInodes,
+			fsStat.UsedInodesPcent,
+		)
+	}
 	// fmt.Println("Filesystem Usage:")
 	// for _, fsInfo := range currentResult.FilesystemStats {
 	// 	fmt.Printf("  %s: Used: %d MB (%.2f%%), Used Inodes: %d (%.2f%%)\n",

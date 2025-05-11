@@ -1,4 +1,6 @@
-package collectors
+//go:build linux
+
+package loadaverage
 
 import (
 	"fmt"
@@ -7,19 +9,9 @@ import (
 	"strings"
 )
 
-type LoadAverageResult struct {
-	OneMin     float64
-	FiveMin    float64
-	FifteenMin float64
-}
+type Collector struct{}
 
-type LoadAverageCollector struct{}
-
-func NewLoadAverageCollector() *LoadAverageCollector {
-	return &LoadAverageCollector{}
-}
-
-func (c *LoadAverageCollector) Collect(result *LoadAverageResult) error {
+func (c *Collector) Collect(result *Result) error {
 	data, err := os.ReadFile("/proc/loadavg")
 	if err != nil {
 		return fmt.Errorf("failed to read /proc/loadavg: %w", err)

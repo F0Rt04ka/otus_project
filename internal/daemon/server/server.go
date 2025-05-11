@@ -72,7 +72,7 @@ func (s *SystemMonitorAPI) GetStats(
 				index := 0
 				for _, fs := range fsStat {
 					resp.DiskStats[index] = &sysmon.DiskStat{
-						Name:            fs.Path,
+						Path:            fs.Path,
 						UsedMb:          fs.UsedMB,
 						UsedPcent:       fs.UsedPcent,
 						UsedInodes:      fs.UsedInodes,

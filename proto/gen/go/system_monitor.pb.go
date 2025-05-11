@@ -323,7 +323,7 @@ func (x *DiskLoadStat) GetWriteKbps() float64 {
 
 type DiskStat struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
-	Name            string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Path            string                 `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
 	UsedMb          float64                `protobuf:"fixed64,2,opt,name=used_mb,json=usedMb,proto3" json:"used_mb,omitempty"`
 	UsedPcent       float64                `protobuf:"fixed64,3,opt,name=used_pcent,json=usedPcent,proto3" json:"used_pcent,omitempty"`
 	UsedInodes      float64                `protobuf:"fixed64,4,opt,name=used_inodes,json=usedInodes,proto3" json:"used_inodes,omitempty"`
@@ -362,9 +362,9 @@ func (*DiskStat) Descriptor() ([]byte, []int) {
 	return file_system_monitor_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *DiskStat) GetName() string {
+func (x *DiskStat) GetPath() string {
 	if x != nil {
-		return x.Name
+		return x.Path
 	}
 	return ""
 }
@@ -427,7 +427,7 @@ const file_system_monitor_proto_rawDesc = "" +
 	"\n" +
 	"write_kbps\x18\x03 \x01(\x01R\twriteKbps\"\xa3\x01\n" +
 	"\bDiskStat\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x17\n" +
+	"\x04path\x18\x01 \x01(\tR\x04path\x12\x17\n" +
 	"\aused_mb\x18\x02 \x01(\x01R\x06usedMb\x12\x1d\n" +
 	"\n" +
 	"used_pcent\x18\x03 \x01(\x01R\tusedPcent\x12\x1f\n" +

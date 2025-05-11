@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/F0Rt04ka/otus_project/internal/daemon/collectors"
+	"github.com/F0Rt04ka/otus_project/internal/daemon/collector/cpuusage"
+	"github.com/F0Rt04ka/otus_project/internal/daemon/collector/diskload"
+	"github.com/F0Rt04ka/otus_project/internal/daemon/collector/filesysteminfo"
+	"github.com/F0Rt04ka/otus_project/internal/daemon/collector/loadaverage"
 	"github.com/F0Rt04ka/otus_project/internal/daemon/config"
 )
 
@@ -12,13 +15,13 @@ type Runner struct {
 	errorChan                   chan error
 	errorHandler                func(error)
 	result                      *ResultMap
-	cpuCollector                *collectors.CPUUsageCollector
+	cpuCollector                cpuusage.CollectorI
 	cpuCollectorInterval        time.Duration
-	loadCollector               *collectors.LoadAverageCollector
+	loadCollector               loadaverage.CollectorI
 	loadCollectorInterval       time.Duration
-	diskLoadCollector           *collectors.DiskLoadCollector
+	diskLoadCollector           diskload.CollectorI
 	diskLoadCollectorInterval   time.Duration
-	filesystemCollector         *collectors.FilesystemInfoCollector
+	filesystemCollector         filesysteminfo.CollectorI
 	filesystemCollectorInterval time.Duration
 }
 
@@ -29,16 +32,16 @@ func NewCollectorRunner(
 	runner := &Runner{result: result}
 
 	if cfg.EnableCPUUsage {
-		runner.cpuCollector = collectors.NewCPUUsageCollector()
+		runner.cpuCollector = cpuusage.NewCPUUsageCollector()
 	}
 	if cfg.EnableLoadAverage {
-		runner.loadCollector = collectors.NewLoadAverageCollector()
+		runner.loadCollector = loadaverage.NewLoadAverageCollector()
 	}
 	if cfg.EnableDiskLoad {
-		runner.diskLoadCollector = collectors.NewDiskLoadCollector()
+		runner.diskLoadCollector = diskload.NewDiskLoadCollector()
 	}
 	if cfg.EnableFilesystemInfo {
-		runner.filesystemCollector = collectors.NewFilesystemInfoCollector()
+		runner.filesystemCollector = filesysteminfo.NewFilesystemInfoCollector()
 	}
 
 	runner.cpuCollectorInterval = time.Duration(cfg.CPUUsageIntervalMs) * time.Millisecond
@@ -95,7 +98,7 @@ func (r *Runner) RunCPUCollector() {
 
 		for {
 			collectTime := <-ticker.C
-			result := &collectors.CPUUsageResult{}
+			result := &cpuusage.Result{}
 			err := r.cpuCollector.Collect(result)
 			if err != nil {
 				r.errorChan <- err
@@ -119,7 +122,7 @@ func (r *Runner) RunLoadCollector() {
 
 		for {
 			collectTime := <-ticker.C
-			result := &collectors.LoadAverageResult{}
+			result := &loadaverage.Result{}
 			err := r.loadCollector.Collect(result)
 			if err != nil {
 				r.errorChan <- err
@@ -143,7 +146,7 @@ func (r *Runner) RunDiskLoadCollector() {
 
 		for {
 			collectTime := <-ticker.C
-			result := &collectors.DiskLoadResult{}
+			result := &diskload.Result{}
 			err := r.diskLoadCollector.Collect(result)
 			if err != nil {
 				r.errorChan <- err
@@ -167,7 +170,7 @@ func (r *Runner) RunFilesystemCollector() {
 
 		for {
 			collectTime := <-ticker.C
-			result := collectors.FilesystemInfoResult{}
+			result := filesysteminfo.Result{}
 			err := r.filesystemCollector.Collect(result)
 			if err != nil {
 				r.errorChan <- err

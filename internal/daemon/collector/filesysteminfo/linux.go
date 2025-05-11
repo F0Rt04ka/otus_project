@@ -1,4 +1,6 @@
-package collectors
+//go:build linux
+
+package filesysteminfo
 
 import (
 	"fmt"
@@ -7,23 +9,10 @@ import (
 	"strings"
 )
 
-type FilesystemInfoResult map[string]*FileSystemUsage
+type Collector struct{}
 
-type FileSystemUsage struct {
-	Path            string
-	UsedMB          float64
-	UsedPcent       float64
-	UsedInodes      float64
-	UsedInodesPcent float64
-}
-
-type FilesystemInfoCollector struct{}
-
-func NewFilesystemInfoCollector() *FilesystemInfoCollector {
-	return &FilesystemInfoCollector{}
-}
-
-func (c *FilesystemInfoCollector) Collect(result FilesystemInfoResult) error {
+func (c *Collector) Collect(result Result) error {
+	// df -m --exclude-type=tmpfs --exclude-type=efivarfs --output=source,used,pcent,iused,ipcent
 	dfInodesCmd := exec.Command(
 		"df",
 		"--exclude-type=tmpfs",

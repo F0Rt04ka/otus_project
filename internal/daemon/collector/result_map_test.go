@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/F0Rt04ka/otus_project/internal/daemon/collector"
-	"github.com/F0Rt04ka/otus_project/internal/daemon/collectors"
+	"github.com/F0Rt04ka/otus_project/internal/daemon/collector/cpuusage"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +17,7 @@ func Test_CollectorResultMap_CheckDeleteOldDataCorrectly(t *testing.T) {
 	startTime := time.Now().Unix()
 
 	for i := int64(0); i < 6; i++ {
-		crm.AddCPUStats(startTime-i, &collectors.CPUUsageResult{
+		crm.AddCPUStats(startTime-i, &cpuusage.Result{
 			UserMode:   float64(i),
 			SystemMode: float64(i),
 			Idle:       float64(i),

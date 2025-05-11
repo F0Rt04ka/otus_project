@@ -39,7 +39,7 @@ message DiskLoadStat {
 }
 
 message DiskStat {
-    string name = 1;
+    string path = 1;
     double used_mb = 2;
     double used_pcent = 3;
     double used_inodes = 4;
