@@ -1,4 +1,6 @@
-package collectors
+//go:build linux
+
+package filesysteminfo
 
 import (
 	"fmt"
@@ -7,25 +9,24 @@ import (
 	"strings"
 )
 
-type FilesystemInfoResult map[string]*FileSystemUsage
+type Collector struct{}
 
-type FileSystemUsage struct {
-	Path            string
-	UsedMB          uint64
-	UsedPcent       float32
-	UsedInodes      uint64
-	UsedInodesPcent float32
-}
-
-type FilesystemInfoCollector struct{}
-
-func NewFilesystemInfoCollector() *FilesystemInfoCollector {
-	return &FilesystemInfoCollector{}
-}
-
-func (c *FilesystemInfoCollector) Collect(result FilesystemInfoResult) error {
-	dfInodesCmd := exec.Command("df", "--exclude-type=tmpfs", "--exclude-type=efivarfs", "-m", "--output=source,used,pcent,iused,ipcent")
-	output, err := dfInodesCmd.Output()
+// ❯ df -m --exclude-type=tmpfs --exclude-type=efivarfs --output=source,used,pcent,iused,ipcent
+// Filesystem       Used Use%   IUsed IUse%
+// /dev/nvme0n1p2  26205  29%  453062    8%
+// /dev/nvme0n1p1    185  21%     322    1%
+// /dev/nvme0n1p4 162632  48% 2286533   10%
+// /dev/nvme0n1p5      7   2%       0     -
+// /dev/sda3      646610  73%  100359    1% .
+func (c *Collector) Collect(result Result) error {
+	dfCmd := exec.Command(
+		"df",
+		"--exclude-type=tmpfs",
+		"--exclude-type=efivarfs",
+		"-m",
+		"--output=source,used,pcent,iused,ipcent",
+	)
+	output, err := dfCmd.Output()
 	if err != nil {
 		return fmt.Errorf("failed to run df: %w", err)
 	}
@@ -62,10 +63,10 @@ func (c *FilesystemInfoCollector) Collect(result FilesystemInfoResult) error {
 		}
 
 		result[source].Path = source
-		result[source].UsedMB = used
-		result[source].UsedPcent = float32(usedPcent)
-		result[source].UsedInodes = iused
-		result[source].UsedInodesPcent = float32(ipcent)
+		result[source].UsedMB = float64(used)
+		result[source].UsedPcent = usedPcent
+		result[source].UsedInodes = float64(iused)
+		result[source].UsedInodesPcent = ipcent
 	}
 
 	return nil

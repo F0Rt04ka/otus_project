@@ -1,4 +1,6 @@
-package collectors
+//go:build linux
+
+package cpuusage
 
 import (
 	"fmt"
@@ -7,24 +9,14 @@ import (
 	"strings"
 )
 
-type CPUUsageResult struct {
-	UserMode   float64
-	SystemMode float64
-	Idle       float64
-}
-
-type CPUUsageCollector struct {
+type Collector struct {
 	prevUser   uint64
 	prevSystem uint64
 	prevIdle   uint64
 	prevTotal  uint64
 }
 
-func NewCPUUsageCollector() *CPUUsageCollector {
-	return &CPUUsageCollector{}
-}
-
-func (c *CPUUsageCollector) Collect(result *CPUUsageResult) (error) {
+func (c *Collector) Collect(result *Result) error {
 	data, err := os.ReadFile("/proc/stat")
 	if err != nil {
 		return fmt.Errorf("failed to read /proc/stat: %w", err)

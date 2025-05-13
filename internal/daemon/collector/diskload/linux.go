@@ -1,21 +1,16 @@
-package collectors
+//go:build linux
+
+package diskload
 
 import (
 	"fmt"
-
 	"os"
 	"strconv"
 	"strings"
 	"time"
 )
 
-type DiskLoadResult struct {
-	TPS       float64
-	ReadKBps  float64
-	WriteKBps float64
-}
-
-type DiskLoadCollector struct {
+type Collector struct {
 	prevReadSectors  uint64
 	prevWriteSectors uint64
 	prevIOs          uint64
@@ -24,11 +19,7 @@ type DiskLoadCollector struct {
 
 const sectorSize = 512 // Размер сектора в байтах
 
-func NewDiskLoadCollector() *DiskLoadCollector {
-	return &DiskLoadCollector{}
-}
-
-func (c *DiskLoadCollector) Collect(result *DiskLoadResult) (error) {
+func (c *Collector) Collect(result *Result) error {
 	data, err := os.ReadFile("/proc/diskstats")
 	if err != nil {
 		return fmt.Errorf("failed to read /proc/diskstats: %w", err)

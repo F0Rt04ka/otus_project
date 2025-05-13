@@ -1,0 +1,12 @@
+{
+    "secondsSaveStats": 300,
+    "clearStatsSecondsInterval": 5,
+    "enableCpuUsage": true,
+    "cpuUsageIntervalMs": 700,
+    "enableLoadAverage": true,
+    "loadAverageIntervalMs": 700,
+    "enableDiskLoad": true,
+    "diskLoadIntervalMs": 1500,
+    "enableFilesystemInfo": true,
+    "filesystemInfoIntervalMs": 2000
+}

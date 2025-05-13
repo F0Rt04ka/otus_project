@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package system_monitor;
+
+option go_package = "github.com/F0Rt04ka/otus_project;sysmon";
+
+service SystemMonitor {
+    rpc GetStats (StatsRequest) returns (stream StatsResponse);
+}
+
+message StatsRequest {
+    int32 N = 1;
+    int32 M = 2;
+}
+
+message StatsResponse {
+    CPUUsageStat cpu_usage = 1;
+    LoadAverageStat load_average = 2;
+    DiskLoadStat disk_load = 3;
+    repeated DiskStat disk_stats = 4;
+}
+
+message CPUUsageStat {
+    double user_mode = 1;
+	double system_mode = 2;
+	double idle = 3;
+}
+
+message LoadAverageStat {
+    double one_min = 1;
+    double five_min = 2;
+    double fifteen_min = 3;
+}
+
+message DiskLoadStat {
+    double tps = 1;
+    double read_kbps = 2;
+    double write_kbps = 3;
+}
+
+message DiskStat {
+    string path = 1;
+    double used_mb = 2;
+    double used_pcent = 3;
+    double used_inodes = 4;
+    double used_inodes_pcent = 5;
+}
